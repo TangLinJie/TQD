@@ -1,0 +1,55 @@
+import:
+    - 'experiments/base.yaml'
+package:
+    - 'decoders.seg_detector_loss'
+define:
+  - name: train_data
+    class: ImageDataset
+    data_dir:
+        - './datasets/mlt17'
+        - './datasets/mlt17'
+    data_list:
+        - './datasets/mlt17/train_list.txt'
+        - './datasets/mlt17/val_list.txt'
+    processes:
+        # - class: AugmentImageData
+        #   use_color: True
+        - class: AugmentDetectionData
+          augmenter_args:
+              - ['Fliplr', 0.5]
+              - ['GaussianBlur', 1.0]
+              - {'cls': 'Affine', 'rotate': [-20, 20]}
+              - ['Resize', [0.2, 4.0]]
+          only_resize: False
+          keep_ratio: False
+        - class: RandomCropData
+          size: [640, 640]
+          max_tries: 10
+        - class: MakeICDARData
+        - class: MakeSegDetectionData
+        - class: MakeBorderMap
+        - class: NormalizeImage
+        - class: FilterKeys
+          superfluous: ['polygons', 'filename', 'shape', 'ignore_tags', 'is_training']
+
+  - name: validate_data
+    class: ImageDataset
+    data_dir:
+        # - './datasets/icdar2017/'
+        - './datasets/mlt17/'
+    data_list:
+        # - './datasets/icdar2017/val_list.txt'
+        - './datasets/mlt17/test_list.txt'
+    processes:
+        - class: AugmentDetectionData
+          augmenter_args:
+              # - ['Resize', {'width': 1024, 'height': 768}]
+              # - ['Resize', {'width': 1024, 'height': 768}]
+              # - ['Resize', {'width': 2048, 'height': 1152}]
+              - ['Resize', {'width': 3072, 'height': 3072}]
+          only_resize: True
+          keep_ratio: True # False
+          using_resize_v2: True
+        - class: MakeICDARData
+        - class: MakeSegDetectionData
+        - class: NormalizeImage

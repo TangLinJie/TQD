@@ -1,0 +1,99 @@
+import:
+    - 'experiments/seg_detector/base_ic15.yaml'
+package: []
+define:
+  - name: 'Experiment'
+    class: Experiment
+    structure: 
+        class: Structure
+        builder: 
+            class: Builder
+            model: SegDetectorModel
+            model_args:
+                backbone: deformable_resnet50
+                decoder: TextQuerySegDetector
+                decoder_args: 
+                    adaptive: True
+                    in_channels: [256, 512, 1024, 2048]
+                    k: 50
+                    num_queries: 1
+                    num_query_fusing_layer: 6
+                    dim_feedforward: 2048
+                    deep_supervision: False
+                    kernel_size: [3, 3]
+                loss_class: MultiLayersBCELoss
+                loss_kwargs:
+                    layer_scale: [1.0] # [0.2, 0.2, 0.6, 0.8, 0.8, 1.]
+        representer:
+            class: SegDetectorRepresenter
+            max_candidates: 1000
+        measurer:  
+            class: QuadMeasurer
+        visualizer:  
+            class: SegDetectorVisualizer
+    train: 
+        class: TrainSettings
+        data_loader: 
+            class: DataLoader
+            dataset: ^train_data
+            batch_size: 16
+            num_workers: 16
+        checkpoint: 
+            class: Checkpoint
+            start_epoch: 0
+            start_iter: 0
+            resume: null
+            resume_optimizer: False
+            resume_base_lr: False
+        model_saver: 
+            class: ModelSaver
+            dir_path: model
+            save_interval: 3000
+            signal_path: save
+        scheduler: 
+            class: CustomOptimizerScheduler
+            optimizer_args:
+                type: "AdamW"
+                lr: 0.0001
+                betas: [0.9, 0.999]
+                weight_decay: 0.01
+                paramwise_cfg:
+                  custom_keys:
+                    absolute_pos_embed:
+                      decay_mult: 0.
+                    relative_position_bias_table:
+                      decay_mult: 0.
+                    norm: 
+                      decay_mult: 0.
+            learning_rate:  
+                class: PolyLrUpdaterHook
+                warmup: 'linear'
+                warmup_iters: 1500
+                warmup_ratio: 0.000001
+                power: 1.0
+                min_lr: 0.0
+                by_epoch: False
+        epochs: 1200 # 2400 # 
+
+    validation: &validate
+        class: ValidationSettings
+        data_loaders:
+            icdar2015: 
+                class: DataLoader
+                dataset: ^validate_data
+                batch_size: 1
+                num_workers: 16
+                collect_fn:
+                    class: ICDARCollectFN
+        visualize: false
+        interval: 4500
+        exempt: 1
+
+    logger:
+        class: Logger
+        verbose: true
+        level: info
+        log_interval: 450
+        log_dir: text_query_detector_ic15
+
+    evaluation: *validate
