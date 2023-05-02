@@ -30,8 +30,6 @@ class MakeSegDetectionData(DataProcess):
         ignore_tags = data['ignore_tags']
         image = data['image']
         filename = data['filename']
-        texts = data['texts']
-        filtered_texts = []
 
         h, w = image.shape[:2]
         if data['is_training']:
@@ -73,14 +71,12 @@ class MakeSegDetectionData(DataProcess):
                 cv2.fillPoly(no_shrunk_gt[0], (0.25*polygon).astype(
                         np.int32)[np.newaxis, :, :], instance_indx)
                 instance_indx += 1
-                filtered_texts.append(texts[i])
 
         if filename is None:
             filename = ''
         data.update(image=image,
                     polygons=polygons,
                     no_shrunk_gt=no_shrunk_gt,
-                    texts=filtered_texts,
                     gt=gt, mask=mask, filename=filename)
         return data
 

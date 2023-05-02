@@ -20,12 +20,10 @@ class MakeICDARData(DataProcess):
 
     def process(self, data):
         polygons = []
-        texts = []
         ignore_tags = []
         annotations = data['polys']
         for annotation in annotations:
             polygons.append(np.array(annotation['points']))
-            texts.append(annotation['text'])
             # polygons.append(annotation['points'])
             ignore_tags.append(annotation['ignore'])
         ignore_tags = np.array(ignore_tags, dtype=np.uint8)
@@ -35,7 +33,6 @@ class MakeICDARData(DataProcess):
         shape = np.array(data['shape'])
         return OrderedDict(image=data['image'],
                            polygons=polygons,
-                           texts=texts,
                            ignore_tags=ignore_tags,
                            shape=shape,
                            filename=filename,
