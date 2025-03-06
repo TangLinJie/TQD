@@ -1,6 +1,6 @@
 # TQD (Text Query Detector)
 
-[[paper 待更新]()]
+[[paper](https://link.springer.com/chapter/10.1007/978-981-97-8511-7_26)]
 
 An official implementation of "Not All Texts Are the Same: Dynamically Querying Texts for Scene Text Detection" (Accepted by PRCV 2024). 
 
